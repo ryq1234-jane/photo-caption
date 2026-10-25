@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>사진 자막 넣기</title>
+
+  <!-- 무료 한글 폰트 (Google Fonts, 상업적 이용도 무료인 OFL 라이선스) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700&family=Nanum+Gothic:wght@800&family=Nanum+Myeongjo:wght@800&family=Black+Han+Sans&family=Do+Hyeon&family=Jua&family=Nanum+Pen+Script&family=Gaegu:wght@700&display=swap">
+
+  <!-- 눈누 무료 폰트 -->
+  <link rel="stylesheet" href="fonts.css">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- 위쪽 막대: 제목 + 사진 열기 + 저장 -->
+    <header class="topbar">
+      <h1>사진 자막 넣기</h1>
+      <div class="actions">
+        <label class="btn btn-light">
+          사진 열기
+          <input type="file" id="fileInput" accept="image/*" hidden>
+        </label>
+        <button id="saveButton" class="btn" disabled>이미지 저장</button>
+      </div>
+    </header>
+
+    <!-- 왼쪽(넓은 화면) / 위쪽(휴대폰): 사진 미리보기 -->
+    <section class="preview" id="preview">
+      <label id="placeholder" class="placeholder" for="fileInput">
+        여기를 눌러 사진을 선택하세요
+      </label>
+      <canvas id="canvas" hidden></canvas>
+
+      <!-- 확대/축소 버튼 -->
+      <div class="zoom-bar" id="zoomBar" hidden>
+        <button type="button" id="zoomOut" aria-label="축소">−</button>
+        <span id="zoomValue">100%</span>
+        <button type="button" id="zoomIn" aria-label="확대">+</button>
+        <button type="button" id="zoomReset">맞춤</button>
+      </div>
+    </section>
+
+    <!-- 휴대폰 전용: 메뉴 탭 (누르면 해당 메뉴가 열리고, 다시 누르면 닫힘) -->
+    <nav class="tabs">
+      <button type="button" class="active" data-tab="groupCaption">자막</button>
+      <button type="button" data-tab="groupText">글자</button>
+      <button type="button" data-tab="groupOutline">외곽선</button>
+      <button type="button" data-tab="groupBg">배경</button>
+      <button type="button" data-tab="groupSave">저장</button>
+    </nav>
+
+    <!-- 오른쪽(넓은 화면) / 아래쪽(휴대폰): 편집 메뉴 -->
+    <aside class="panel">
+
+      <!-- 자막 -->
+      <section class="group active" id="groupCaption">
+        <h2>자막</h2>
+        <textarea id="captionInput" class="caption" rows="3" placeholder="여기에 자막을 입력하세요&#10;(Enter로 줄을 바꿀 수 있어요)"></textarea>
+      </section>
+
+      <!-- 글자 -->
+      <section class="group" id="groupText">
+        <h2>글자</h2>
+        <div class="rows">
+          <label class="row">
+            <span>글꼴</span>
+            <select id="fontInput"></select> <!-- 목록은 script.js에서 채움 -->
+          </label>
+          <label class="row">
+            <span>크기</span>
+            <input type="range" id="sizeInput" min="3" max="20" value="8">
+            <output id="sizeValue">8</output>
+          </label>
+          <label class="row">
+            <span>기울기</span>
+            <input type="range" id="angleInput" min="-45" max="45" value="0">
+            <output id="angleValue">0</output>
+          </label>
+          <label class="row">
+            <span>줄 간격</span>
+            <input type="range" id="lineHeightInput" min="90" max="200" value="125">
+            <output id="lineHeightValue">125</output>
+          </label>
+          <label class="row">
+            <span>정렬</span>
+            <select id="alignInput">
+              <option value="left">왼쪽</option>
+              <option value="center" selected>가운데</option>
+              <option value="right">오른쪽</option>
+            </select>
+          </label>
+          <label class="row">
+            <span>위치</span>
+            <select id="positionInput">
+              <option value="top">위</option>
+              <option value="middle">가운데</option>
+              <option value="bottom" selected>아래</option>
+              <option value="custom" hidden>직접 옮김</option>
+            </select>
+          </label>
+          <p class="hint">사진 위의 자막을 마우스로 끌어서 옮길 수도 있어요.</p>
+          <label class="row">
+            <span>색</span>
+            <input type="color" id="colorInput" value="#ffffff">
+          </label>
+        </div>
+      </section>
+
+      <!-- 외곽선 -->
+      <section class="group" id="groupOutline">
+        <h2>
+          외곽선
+          <label class="switch"><input type="checkbox" id="outlineOn" checked><i></i></label>
+        </h2>
+        <div class="rows">
+          <label class="row">
+            <span>두께</span>
+            <input type="range" id="outlineInput" min="1" max="30" value="12">
+            <output id="outlineValue">12</output>
+          </label>
+          <label class="row">
+            <span>색</span>
+            <input type="color" id="outlineColorInput" value="#000000">
+          </label>
+        </div>
+      </section>
+
+      <!-- 배경색 -->
+      <section class="group" id="groupBg">
+        <h2>
+          배경색
+          <label class="switch"><input type="checkbox" id="bgOn"><i></i></label>
+        </h2>
+        <div class="rows">
+          <label class="row">
+            <span>투명도</span>
+            <input type="range" id="bgAlphaInput" min="10" max="100" value="60">
+            <output id="bgAlphaValue">60</output>
+          </label>
+          <label class="row">
+            <span>높이</span>
+            <input type="range" id="bgHeightInput" min="60" max="300" value="100">
+            <output id="bgHeightValue">100</output>
+          </label>
+          <label class="row">
+            <span>색</span>
+            <input type="color" id="bgColorInput" value="#000000">
+          </label>
+        </div>
+      </section>
+
+      <!-- 저장 설정 -->
+      <section class="group" id="groupSave">
+        <h2>저장 설정</h2>
+        <div class="rows">
+          <label class="row">
+            <span>형식</span>
+            <select id="formatInput">
+              <option value="image/jpeg" selected>JPG (사진에 적합)</option>
+              <option value="image/png">PNG (화질 손실 없음)</option>
+              <option value="image/webp">WebP (용량 가장 작음)</option>
+            </select>
+          </label>
+          <label class="row" id="qualityRow">
+            <span>품질</span>
+            <input type="range" id="qualityInput" min="10" max="100" value="90">
+            <output id="qualityValue">90</output>
+          </label>
+          <label class="row">
+            <span>크기</span>
+            <select id="scaleInput">
+              <option value="1" selected>원본 (100%)</option>
+              <option value="0.75">75%</option>
+              <option value="0.5">50%</option>
+              <option value="0.25">25%</option>
+            </select>
+          </label>
+          <p class="hint" id="saveInfo">사진을 열면 예상 용량이 표시돼요.</p>
+        </div>
+      </section>
+
+    </aside>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

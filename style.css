@@ -1,0 +1,439 @@
+/* ===== 기본 설정 ===== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  background: #f2f3f5;
+  color: #222;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ===== 전체 배치 =====
+   넓은 화면: 위쪽 막대 / 왼쪽 사진 + 오른쪽 메뉴
+   화면 높이에 딱 맞춰서 페이지 전체는 스크롤되지 않고, 메뉴만 따로 스크롤됨 */
+.app {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "top     top"
+    "preview panel";
+  height: 100vh;
+  height: 100dvh; /* 휴대폰 주소창 높이까지 고려한 실제 화면 높이 (지원하는 브라우저만) */
+}
+
+/* 조절기 색을 버튼 색과 맞춤 */
+input[type="range"],
+input[type="checkbox"] {
+  accent-color: #3b6ef5;
+}
+
+/* ===== 위쪽 막대 ===== */
+.topbar {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  background: #fff;
+  border-bottom: 1px solid #e3e4e8;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 버튼 */
+.btn {
+  padding: 9px 16px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #fff;
+  background: #3b6ef5;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #2c58d1;
+}
+
+.btn:disabled {
+  background: #b5b9c4;
+  cursor: not-allowed;
+}
+
+.btn-light {
+  color: #3b6ef5;
+  background: #e8eefe;
+}
+
+.btn-light:hover {
+  background: #d6e1fd;
+}
+
+/* ===== 사진 미리보기 ===== */
+.preview {
+  grid-area: preview;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative; /* 확대 버튼을 이 안에 띄우기 위해 */
+  overflow: hidden; /* 확대한 사진이 영역 밖으로 삐져나오지 않게 */
+  min-height: 0; /* 사진이 커도 영역을 넘치지 않게 */
+  padding: 20px;
+  background: #2b2d33;
+  touch-action: none; /* 휴대폰에서 두 손가락 확대를 페이지 대신 사진에 적용 */
+}
+
+/* 확대/축소 버튼 묶음 (미리보기 오른쪽 아래) */
+.zoom-bar {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.8rem;
+}
+
+.zoom-bar button {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  font: inherit;
+  font-size: 1rem;
+  color: #fff;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.zoom-bar button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+#zoomReset {
+  font-size: 0.8rem;
+}
+
+#zoomValue {
+  min-width: 42px;
+  text-align: center;
+}
+
+/* 탭은 휴대폰에서만 보임 */
+.tabs {
+  display: none;
+}
+
+/* 사진이 영역 안에 쏙 들어가게 (비율 유지) */
+canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  will-change: transform; /* 확대·이동을 부드럽게 */
+}
+
+/* 안내 문구 */
+.hint {
+  margin: -4px 0 0;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.placeholder {
+  padding: 60px 40px;
+  color: #aab;
+  border: 2px dashed #555a66;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.placeholder:hover {
+  color: #fff;
+  border-color: #888;
+}
+
+/* ===== 오른쪽 메뉴 ===== */
+.panel {
+  grid-area: panel;
+  overflow-y: auto; /* 메뉴가 길면 메뉴만 스크롤 */
+  background: #fff;
+  border-left: 1px solid #e3e4e8;
+}
+
+/* 메뉴 묶음 하나 (자막 / 글자 / 외곽선 / 배경색) */
+.group {
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.group h2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 12px;
+  font-size: 0.8rem;
+  color: #666;
+  letter-spacing: 0.05em;
+}
+
+/* 자막 입력칸 */
+.caption {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.4;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  resize: vertical; /* 입력칸 높이만 늘릴 수 있게 */
+}
+
+.caption:focus {
+  outline: 2px solid #3b6ef5;
+  border-color: transparent;
+}
+
+/* 메뉴 한 줄: [이름 | 조절기 | 숫자] */
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 56px 1fr 32px;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.row select {
+  grid-column: 2 / 4; /* 선택 상자는 숫자 칸까지 넓게 */
+  padding: 7px 8px;
+  font: inherit;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.row input[type="range"] {
+  width: 100%;
+}
+
+.row output {
+  text-align: right;
+  color: #3b6ef5;
+  font-weight: bold;
+}
+
+.row input[type="color"] {
+  width: 44px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+
+/* 꺼진 묶음 / 쓸 수 없는 줄은 흐리게 + 조작 못하게 */
+.group.off .rows,
+.row.disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ===== 켜기/끄기 스위치 ===== */
+.switch input {
+  display: none;
+}
+
+.switch i {
+  display: block;
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: #ccc;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.switch i::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: left 0.2s;
+}
+
+.switch input:checked + i {
+  background: #3b6ef5;
+}
+
+.switch input:checked + i::after {
+  left: 18px;
+}
+
+/* ===== 좁은 화면(휴대폰): 위에서부터 막대 / 사진 / 탭 / 선택한 메뉴 하나 ===== */
+@media (max-width: 760px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto auto; /* 사진이 남는 공간을 모두 차지 */
+    grid-template-areas:
+      "top"
+      "preview"
+      "tabs"
+      "panel";
+    padding-bottom: env(safe-area-inset-bottom, 0px); /* 아이폰 아래쪽 막대 피하기 */
+    background: #fff;
+  }
+
+  /* 메뉴 탭 */
+  .tabs {
+    grid-area: tabs;
+    display: flex;
+    background: #fff;
+    border-top: 1px solid #e3e4e8;
+    border-bottom: 1px solid #eee;
+  }
+
+  .tabs button {
+    flex: 1;
+    padding: 12px 2px;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #888;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+  }
+
+  .tabs button.active {
+    color: #3b6ef5;
+    border-bottom-color: #3b6ef5;
+  }
+
+  /* 선택한 탭의 메뉴만 보이게 */
+  .panel {
+    max-height: 42vh;
+    max-height: 42dvh;
+  }
+
+  .panel.closed {
+    display: none;
+  }
+
+  .group {
+    display: none;
+    border-bottom: none;
+  }
+
+  .group.active {
+    display: block;
+  }
+
+  /* 탭 이름과 겹치는 제목은 숨김 (켜기/끄기 스위치가 있는 제목만 남김) */
+  .group h2:not(:has(.switch)) {
+    display: none;
+  }
+
+  .topbar {
+    padding: 8px 12px;
+    padding-top: calc(8px + env(safe-area-inset-top, 0px)); /* 아이폰 노치 피하기 */
+  }
+
+  .topbar h1 {
+    font-size: 1rem;
+    white-space: nowrap;
+  }
+
+  /* 손가락으로 누르기 쉽게 버튼을 크게 */
+  .btn {
+    padding: 11px 14px;
+  }
+
+  .preview {
+    padding: 10px;
+  }
+
+  .placeholder {
+    padding: 40px 24px;
+  }
+
+  .panel {
+    border-left: none;
+  }
+
+  .group {
+    padding: 14px 16px;
+  }
+
+  /* 글자 크기 16px 이상이면 아이폰에서 입력할 때 화면이 확대되지 않음 */
+  .caption,
+  .row select {
+    font-size: 16px;
+  }
+
+  .row select {
+    padding: 10px 8px;
+  }
+
+  .row {
+    grid-template-columns: 56px 1fr 40px;
+    min-height: 40px;
+  }
+
+  /* 슬라이더를 손가락으로 잡기 쉽게 */
+  .row input[type="range"] {
+    height: 32px;
+  }
+
+  .row input[type="color"] {
+    width: 56px;
+    height: 38px;
+  }
+}
+
+/* 아주 좁은 화면에서는 제목 줄이기 */
+@media (max-width: 380px) {
+  .topbar h1 {
+    font-size: 0.9rem;
+  }
+
+  .btn {
+    padding: 10px 10px;
+    font-size: 0.85rem;
+  }
+}
